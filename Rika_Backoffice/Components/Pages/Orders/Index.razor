@@ -1,0 +1,79 @@
+﻿@page "/orders"
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using Rika_Backoffice.Models
+@inject HttpClient Http
+
+@attribute [StreamRendering(true)]
+@rendermode @(new InteractiveServerRenderMode(false))
+
+<h3>Orders</h3>
+
+@switch (status)
+{
+    case LoadStatus.Loading:
+        <p><em>Loading...</em></p>
+        break;
+    case LoadStatus.Failed:
+        <p><em>Could not fetch products. Please try again later.</em></p>
+        break;
+    case LoadStatus.NoData:
+        <p><em>No products found.</em></p>
+        break;
+    case LoadStatus.Success:
+        <QuickGrid Items="orders">
+            <PropertyColumn Property="@(o => o.OrderID)" Title="Id" Sortable="true" />
+            <PropertyColumn Property="@(o => o.OrderCustomer.CustomerName)" Title="Title" Sortable="true" Class="title-column" />
+            <PropertyColumn Property="@(o => o.OrderStatus)" Title="Description" />
+        </QuickGrid>
+    
+        break;
+}
+
+@code {
+
+    private IQueryable<OrderModel>? orders;
+    private LoadStatus status = LoadStatus.Loading;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var response = await Http.GetAsync("http://localhost:7245/api/GetAllOrders");
+            if (response.IsSuccessStatusCode)
+            {
+                var body = await response.Content.ReadFromJsonAsync<ApiResponse>();
+                var orderList = body?.Orders;
+                orders = orderList?.AsQueryable();
+                status = (orders == null || !orders.Any()) ? LoadStatus.NoData : LoadStatus.Success;
+
+
+            }
+            else 
+            {
+                status = LoadStatus.Failed;}
+            }
+        catch (Exception ex)
+        {
+
+            Console.WriteLine(ex.Message);
+            status = LoadStatus.Failed;
+        }
+
+    }
+
+
+    public class ApiResponse
+    {
+        public List<OrderModel>? Orders { get; set; }
+    }
+
+    public enum LoadStatus
+    {
+        Loading,
+        Success,
+        Failed,
+        NoData
+    }
+
+}
