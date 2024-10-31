@@ -22,7 +22,7 @@
         break;
     case LoadStatus.Success:
         <QuickGrid Items="orders">
-            <PropertyColumn Property="@(o => o.OrderID)" Title="Id" Sortable="true" />
+            <PropertyColumn Property="@(o => o.OrderID)" Title="Order Id" Sortable="true" />
             <PropertyColumn Property="@(o => o.OrderDate)" Title="Date" Sortable="true" Class="title-column" />
             <PropertyColumn Property="@(o => o.OrderCustomer!.CustomerName)" Title="Customer Name" Sortable="true" Class="title-column" />
             <PropertyColumn Property="@(o => o.ProductCount)" Title="Products" Sortable="true" Class="title-column" />

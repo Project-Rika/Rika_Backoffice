@@ -5,7 +5,7 @@ namespace Rika_Backoffice.Models;
 public class OrderModel
 {
     [JsonPropertyName("orderId")]
-    public string? OrderID { get; set; }
+    public int OrderID { get; set; }
     [JsonPropertyName("orderDate")]
     public DateTime OrderDate { get; set; }
     [JsonPropertyName("totalAmount")]
@@ -33,7 +33,7 @@ public class OrderModel
 public class OrderCustomer
 {
     [JsonPropertyName("orderCustomerId")]
-    public string? OrderCustomerID { get; set; }
+    public Guid OrderCustomerID { get; set; }
     [JsonPropertyName("customerName")]
     public string? CustomerName { get; set; }
     [JsonPropertyName("customerEmail")]
@@ -45,7 +45,7 @@ public class OrderCustomer
 public class OrderAddress
 {
     [JsonPropertyName("orderAddressId")]
-    public string? OrderAddressId { get; set; }
+    public Guid OrderAddressId { get; set; }
     [JsonPropertyName("address")]
     public string? Address { get; set; }
     [JsonPropertyName("city")]
@@ -58,8 +58,8 @@ public class OrderAddress
 
 public class OrderProduct
 {
-    [JsonPropertyName("productId")]
-    public string? ProductID { get; set; }
+    [JsonPropertyName("articleNumber")]
+    public string? ArticleNumber { get; set; }
     [JsonPropertyName("productName")]
     public string? ProductName { get; set; }
     [JsonPropertyName("quantity")]
@@ -71,5 +71,5 @@ public class OrderProduct
     [JsonPropertyName("size")]
     public string? Size { get; set; }
     [JsonPropertyName("orderId")]
-    public string? OrderId { get; set; }
+    public int OrderId { get; set; }
 }
