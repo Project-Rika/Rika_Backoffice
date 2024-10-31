@@ -10,8 +10,8 @@ public class OrderModel
     public DateTime OrderDate { get; set; }
     [JsonPropertyName("totalAmount")]
     public string? TotalAmount { get; set; }
-    [JsonPropertyName("paymnetMehod")]
-    public string? PaymnetMethod { get; set; }
+    [JsonPropertyName("paymentMethod")]
+    public string? PaymentMethod { get; set; }
     [JsonPropertyName("shipmentMethod")]
     public string? ShipmentMethod { get; set; }
     [JsonPropertyName("orderStatus")]
@@ -26,6 +26,8 @@ public class OrderModel
     public OrderAddress? OrderAddress { get; set; }
     [JsonPropertyName("orderProducts")]
     public List<OrderProduct>? OrderProducts { get; set; }
+
+    public int ProductCount => OrderProducts?.Count ?? 0;
 }
 
 public class OrderCustomer
