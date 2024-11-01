@@ -1,0 +1,113 @@
+﻿@page "/addproduct"
+@using Rika_Backoffice.Models
+@using System.ComponentModel.DataAnnotations
+@using System.Text.Json
+@using System.Text
+
+
+
+<div>
+    <EditForm method="post" Model="Input" OnValidSubmit="CreateProduct" FormName="AddProduct">
+        <div>
+            <label>
+                Product Name:
+                <InputText @bind-Value="Input.ProductName" />
+            </label>
+            <label>
+                Product Price:
+                <InputNumber @bind-Value="Input.ProductPrice" />
+            </label>
+            <label>
+                Product Sale Price:
+                <InputNumber @bind-Value="Input.ProductSalePrice" />
+            </label>
+            <label>
+                Product Description:
+                <InputText @bind-Value="Input.ProductDescription" />
+            </label>
+            <label>
+                Category:
+                <InputNumber @bind-Value="Input.ProductCategoryId" />
+            </label>
+            <label>
+                Color:
+                <InputNumber @bind-Value="Input.ProductColorId" />
+            </label>
+            <label>
+                Size:
+                <InputNumber @bind-Value="Input.ProductSizeId" />
+            </label>
+
+            <button type="submit">SUBMIT</button>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+
+    public async Task CreateProduct(EditContext editContext)
+    {
+        var product = new ProductModel()
+            {
+                ProductName = Input.ProductName,
+                ProductPrice = Input.ProductPrice,
+                ProductSalePrice = Input.ProductSalePrice,
+                ProductDescription = Input.ProductDescription,
+                ProductCategoryId = Input.ProductCategoryId,
+                ProductSizeId = Input.ProductSizeId,
+                ProductColorId = Input.ProductColorId
+            };
+
+        var json = JsonSerializer.Serialize(product);
+
+        try
+        {
+            using (var client = new HttpClient())
+            {
+                var response = await client.PostAsync("https://rika-productprovider.azurewebsites.net/api/CreateProduct?code=NJXQzCkBY3vCnQn32Fta8jYXlGOxhCs2TnZGVnaaQ5OxAzFuvVHdyQ%3D%3D", new StringContent(json, Encoding.UTF8, "application/json"));
+
+                Console.WriteLine("Serialized JSON: " + json);
+
+
+                if (response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine("Product added successfully");
+                }
+                else
+                {
+                    Console.WriteLine("Failed to add product");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    private sealed class InputModel
+    {
+        [Required]
+        public string ProductName { get; set; } = null!;
+
+        [Required]
+        public decimal ProductPrice { get; set; }
+
+        [Required]
+        public decimal ProductSalePrice { get; set; }
+
+        [Required]
+        public string ProductDescription { get; set; } = null!;
+
+        [Required]
+        public int ProductCategoryId { get; set; }
+
+        [Required]
+        public int ProductColorId { get; set; }
+        
+        [Required]
+        public int ProductSizeId { get; set; }
+    }
+}
