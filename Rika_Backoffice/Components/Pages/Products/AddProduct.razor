@@ -6,39 +6,66 @@
 
 
 
-<div>
-    <EditForm method="post" Model="Input" OnValidSubmit="CreateProduct" FormName="AddProduct">
-        <div>
-            <label>
-                Product Name:
-                <InputText @bind-Value="Input.ProductName" />
-            </label>
-            <label>
-                Product Price:
-                <InputNumber @bind-Value="Input.ProductPrice" />
-            </label>
-            <label>
-                Product Sale Price:
-                <InputNumber @bind-Value="Input.ProductSalePrice" />
-            </label>
-            <label>
-                Product Description:
-                <InputText @bind-Value="Input.ProductDescription" />
-            </label>
-            <label>
-                Category:
-                <InputNumber @bind-Value="Input.ProductCategoryId" />
-            </label>
-            <label>
-                Color:
-                <InputNumber @bind-Value="Input.ProductColorId" />
-            </label>
-            <label>
-                Size:
-                <InputNumber @bind-Value="Input.ProductSizeId" />
-            </label>
+<div class="vw-100 d-inline-flex justify-content-center flex-column">
+    <h3>Create a Product</h3>
+    <EditForm method="post" Model="Input" OnValidSubmit="CreateProduct" FormName="AddProduct" class="w-100">
+        <div class="w-50 d-inline-flex justify-content-center flex-column ">
+            <div class="form-group">
+                <label class="form-label">
+                    Product Name:
+                    <InputText @bind-Value="Input.ProductName" class="form-control" />
+                </label>
+            </div>
 
-            <button type="submit">SUBMIT</button>
+            <div class="form-group">
+                <label class="form-label">
+                    Product Price:
+                    <InputNumber @bind-Value="Input.ProductPrice" class="form-control" />
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    Product Sale Price:
+                    <InputNumber @bind-Value="Input.ProductSalePrice" class="form-control" />
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    Product Description:
+                    <InputText @bind-Value="Input.ProductDescription" class="form-control" />
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    Category:
+                    <InputNumber @bind-Value="Input.ProductCategoryId" class="form-control" />
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    Color:
+                    <InputSelect id="department" @bind-Value="Input.ProductColorId">
+                        <option hidden value="">Pick a color</option>
+                        @foreach (var color in Colors)
+                        {
+                            <option value="@color.id">@color.colorName</option>
+                        }
+                    </InputSelect>
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    Size:
+                    <InputNumber @bind-Value="Input.ProductSizeId" class="form-control" />
+                </label>
+            </div>
+
+            <button type="submit" class="btn p-3 btn-danger w-auto">SUBMIT</button>
         </div>
     </EditForm>
 </div>
@@ -46,10 +73,40 @@
 @code {
     [SupplyParameterFromForm]
     private InputModel Input { get; set; } = new();
+    private List<ProductColorEntity>? Colors { get; set; } = new List<ProductColorEntity>();
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        try
+        {
+            using (var client = new HttpClient())
+            {
+                var response = await client.GetAsync("https://rika-productprovider.azurewebsites.net/api/GetAllColors?code=BnPaTGQeB_UdqSPPD81t_LHChr7Zol0HNeqoFMcx2c_UAzFuh7UtOA%3D%3D");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonString = await response.Content.ReadAsStringAsync();
+                    Colors = JsonSerializer.Deserialize<List<ProductColorEntity>>(jsonString);
+
+                }
+                else
+                {
+                    Console.WriteLine($"Error: {response.StatusCode}");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception: {ex.Message}");
+        }
+    }
+
+
 
     public async Task CreateProduct(EditContext editContext)
     {
-        var product = new ProductModel()
+        var product = new CreateProductModel()
             {
                 ProductName = Input.ProductName,
                 ProductPrice = Input.ProductPrice,
@@ -60,15 +117,18 @@
                 ProductColorId = Input.ProductColorId
             };
 
-        var json = JsonSerializer.Serialize(product);
+        var options = new JsonSerializerOptions
+            {
+                DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+            };
+
+        var json = JsonSerializer.Serialize(product, options);
 
         try
         {
             using (var client = new HttpClient())
             {
                 var response = await client.PostAsync("https://rika-productprovider.azurewebsites.net/api/CreateProduct?code=NJXQzCkBY3vCnQn32Fta8jYXlGOxhCs2TnZGVnaaQ5OxAzFuvVHdyQ%3D%3D", new StringContent(json, Encoding.UTF8, "application/json"));
-
-                Console.WriteLine("Serialized JSON: " + json);
 
 
                 if (response.IsSuccessStatusCode)
@@ -104,10 +164,8 @@
         [Required]
         public int ProductCategoryId { get; set; }
 
-        [Required]
-        public int ProductColorId { get; set; }
-        
-        [Required]
+        public int? ProductColorId { get; set; }
+
         public int ProductSizeId { get; set; }
     }
 }
