@@ -29,11 +29,19 @@
                         <div class="card-body">
                             <h5 class="card-title">Order Information</h5>
                             <p><strong>Order Id:</strong> @OrderId</p>
-                            <p><strong>Order Date:</strong> @order.OrderDate.ToString("yyyy-MM-dd")</p>
+                            <p><strong>Order Date:</strong> @order!.OrderDate.ToString("yyyy-MM-dd")</p>
                             <p><strong>Total Amount:</strong> @order.TotalAmount</p>
                             <p><strong>Payment Method:</strong> @order.PaymentMethod</p>
                             <p><strong>Shipment Method:</strong> @order.ShipmentMethod</p>
-                            <p><strong>Order Status:</strong> @order.OrderStatus</p>
+                            <p>
+                                <strong>Order Status:</strong>
+                                <select @onchange="UpdateOrderStatus">
+                                    @foreach (var status in newStatus)
+                                    {
+                                        <option value="@status" selected="@((status == order.OrderStatus) ? "selected" : null)">@status</option>
+                                    }
+                                </select>
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -114,6 +122,9 @@
     [Parameter]
     public int? OrderId { get; set; }
 
+
+    private List<string> newStatus = new List<string> { "Pending", "Processing", "Shipped", "Delivered", "Cancelled" };
+
     private OrderModel? order; 
 
     private LoadStatus status = LoadStatus.Loading;
@@ -148,6 +159,27 @@
         {
             Console.WriteLine(ex.Message);
             status = LoadStatus.Failed;
+        }
+    }
+
+    private async Task UpdateOrderStatus(ChangeEventArgs e)
+    {
+        var newStatus = e.Value!.ToString();
+        if (newStatus != null && order != null)
+        {
+            order.OrderStatus = newStatus;
+            try
+            {
+                var response = await Http.PostAsJsonAsync($"http://localhost:7245/api/UpdateOrder", order);
+                if (!response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine("Failed to update order status.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
         }
     }
 
