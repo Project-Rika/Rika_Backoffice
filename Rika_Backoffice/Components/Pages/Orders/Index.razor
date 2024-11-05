@@ -22,35 +22,41 @@
         <p><em>No orders found.</em></p>
         break;
     case LoadStatus.Success:
-        <QuickGrid Items="orders">
-            <PropertyColumn Property="@(o => o.OrderID)" Title="Order Id" Sortable="true" />
-            <PropertyColumn Property="@(o => o.OrderDate)" Title="Date" Sortable="true" Class="title-column" />
-            <PropertyColumn Property="@(o => o.OrderCustomer!.CustomerName)" Title="Customer Name" Sortable="true" Class="title-column" />
-            <PropertyColumn Property="@(o => o.ProductCount)" Title="Products" Sortable="true" Class="title-column" />
-            <PropertyColumn Property="@(o => o.TotalAmount)" Title="Total Amount" Sortable="true" Class="title-column" />
 
-            <PropertyColumn Property="@(o => char.ToUpper(o.OrderStatus![0]) + o.OrderStatus.Substring(1).ToLower())" Title="Status" />
-
-
-            
-
-
-            <TemplateColumn Title="Action">
-             
-                <NavLink class="btn btn-info" href="@($"/orders/{context.OrderID}")">Details</NavLink>
-                
-            </TemplateColumn>
-
-           
-        </QuickGrid>
+        <div class="grid">
+            <QuickGrid Items="FilteredProducts">
+                <PropertyColumn Property="@(o => o.OrderID)" Title="Order Id" Sortable="true" />
+                <PropertyColumn Property="@(o => o.OrderDate)" Title="Date" Sortable="true" Class="title-column" />
+                <PropertyColumn Property="@(o => o.OrderCustomer!.CustomerName)" Title="Customer Name" Sortable="true" Class="customer-name">
+                    <ColumnOptions>
+                        <div class="search-box">
+                            <input type="search" autofocus @bind="customerName" @bind:event="oninput" placeholder="Search name..." />
+                        </div>
+                    </ColumnOptions>
+                </PropertyColumn>
+                <PropertyColumn Property="@(o => o.ProductCount)" Title="Products" Sortable="true" Class="title-column" />
+                <PropertyColumn Property="@(o => o.TotalAmount)" Title="Total Amount" Sortable="true" Class="title-column" />
+                <PropertyColumn Property="@(o => char.ToUpper(o.OrderStatus![0]) + o.OrderStatus.Substring(1).ToLower())" Title="Status" />
+                <TemplateColumn Title="Action">
+                    <NavLink class="btn btn-info" href="@($"/orders/{context.OrderID}")">Details</NavLink>
+                </TemplateColumn>
+            </QuickGrid>
+        </div>
+        
         break;
 }
 
 @code {
 
     private IQueryable<OrderModel>? orders;
-   
+    private IQueryable<OrderModel>? FilteredProducts => orders?.Where(o => o.OrderCustomer.CustomerName!.Contains(customerName, StringComparison.CurrentCultureIgnoreCase));
     private LoadStatus status = LoadStatus.Loading;
+
+    private string customerName = string.Empty;
+
+  
+
+
 
     private void NavigateToDetails(OrderModel order)
     {
@@ -97,6 +103,8 @@
             status = LoadStatus.Failed;
         }
     }
+
+   
 
 
   
