@@ -1,0 +1,83 @@
+﻿@page "/orders/{OrderId:int}"
+@using Rika_Backoffice.Models
+
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@attribute [StreamRendering(true)]
+@rendermode @(new InteractiveServerRenderMode(false))
+
+<h3>Order</h3>
+
+<NavLink class="btn btn-primary" href="/orders">Back to Orders</NavLink>
+
+@switch (status)
+{
+    case LoadStatus.Loading:
+        <p><em>Loading...</em></p>
+        break;
+    case LoadStatus.Failed:
+        <p><em>Could not fetch orders. Please try again later.</em></p>
+        break;
+    case LoadStatus.NoData:
+        <p><em>No orders found.</em></p>
+        break;
+    case LoadStatus.Success:
+
+        <p>Order Id: @OrderId</p>
+        <p>Order Date: @order.OrderDate</p>
+        <p>Customer Name: @order.OrderCustomer.CustomerName</p>
+        
+        foreach (var product in order.OrderProducts)
+        {
+            <p>Product Name: @product.ProductName</p>
+            <p>Quantity: @product.Quantity</p>
+            <p>Price: @product.UnitPrice</p>
+        }
+        
+        break;
+}
+
+@code {
+
+
+    [Parameter]
+    public int? OrderId { get; set; }
+
+    private OrderModel? order; 
+
+    private LoadStatus status = LoadStatus.Loading;
+
+    public enum LoadStatus
+    {
+        Loading,
+        Success,
+        Failed,
+        NoData
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+       
+
+        try
+        {
+            var response = await Http.GetAsync($"http://localhost:7245/api/GetOneOrder/{OrderId}");
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<OrderModel>();
+                order = result!;
+                status = (result == null) ? LoadStatus.NoData : LoadStatus.Success;
+            }
+            else
+            {
+                status = LoadStatus.Failed;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            status = LoadStatus.Failed;
+        }
+    }
+
+}

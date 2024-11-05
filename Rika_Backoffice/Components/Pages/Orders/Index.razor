@@ -3,6 +3,7 @@
 @using Rika_Backoffice.Models
 @using System.Text.Json.Serialization
 @inject HttpClient Http
+@inject NavigationManager Navigation
 
 @attribute [StreamRendering(true)]
 @rendermode @(new InteractiveServerRenderMode(false))
@@ -29,6 +30,18 @@
             <PropertyColumn Property="@(o => o.TotalAmount)" Title="Total Amount" Sortable="true" Class="title-column" />
 
             <PropertyColumn Property="@(o => char.ToUpper(o.OrderStatus![0]) + o.OrderStatus.Substring(1).ToLower())" Title="Status" />
+
+
+            
+
+
+            <TemplateColumn Title="Action">
+             
+                <NavLink class="btn btn-info" href="@($"/orders/{context.OrderID}")">Details</NavLink>
+                
+            </TemplateColumn>
+
+           
         </QuickGrid>
         break;
 }
@@ -36,7 +49,21 @@
 @code {
 
     private IQueryable<OrderModel>? orders;
+   
     private LoadStatus status = LoadStatus.Loading;
+
+    private void NavigateToDetails(OrderModel order)
+    {
+        Navigation.NavigateTo($"/orders/{order.OrderID}");
+    }
+
+
+    bool Pending;
+
+  
+
+
+   
 
     public enum LoadStatus
     {
@@ -56,6 +83,7 @@
             {
                 var orderList = await response.Content.ReadFromJsonAsync<List<OrderModel>>();
                 orders = orderList?.OrderByDescending(o => o.OrderDate).AsQueryable();
+      
                 status = (orders == null || !orders.Any()) ? LoadStatus.NoData : LoadStatus.Success;
             }
             else

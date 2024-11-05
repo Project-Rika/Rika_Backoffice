@@ -15,7 +15,8 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddHttpClient();
 
-
+builder.Services.AddServerSideBlazor()
+    .AddCircuitOptions(options => { options.DetailedErrors = true; });
 
 
 builder.Services.AddCascadingAuthenticationState();
