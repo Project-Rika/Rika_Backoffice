@@ -1,5 +1,68 @@
-﻿<h3>Index</h3>
+﻿@page "/products/{Id}"
+@using Rika_Backoffice.Models
+@inject HttpClient Http
+
+
+<h3>@Product.ProductName</h3>
+
+
+<EditForm Model="Product">
+
+    <div class="input-group">
+        <label>Product Name:</label>
+        <InputText @bind-Value="Product.ProductName" />
+    </div>
+
+    <div class="input-group">
+        <label>Product Id:</label>
+        <InputText @bind-Value="Product.Id" />
+    </div>
+
+    <div class="input-group">
+        <label>Product Description:</label>
+        <InputText @bind-Value="Product.ProductDescription" />
+    </div>
+
+    <div class="input-group">
+        <label>Product Sale Price:</label>
+        <InputNumber @bind-Value="Product.ProductSalePrice" />
+    </div>
+
+    <div class="input-group">
+        <label>Product Price:</label>
+        <InputNumber @bind-Value="Product.ProductPrice" />
+    </div>
+
+    <div class="input-group">
+        <label>Product Category Id:</label>
+        <InputNumber @bind-Value="Product.ProductCategoryId" />
+    </div>
+
+    <div class="input-group">
+        <label>Product Size Id:</label>
+        <InputNumber @bind-Value="Product.ProductSizeId" />
+    </div>
+
+    <div class="input-group">
+        <label>Product Color Id:</label>
+        <InputNumber @bind-Value="Product.ProductColorId" />
+    </div>
+
+</EditForm>
+
 
 @code {
 
+    [Parameter]
+    public string? Id { get; set; }
+
+    [SupplyParameterFromForm]
+    private ProductModel? Product { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await Http.GetAsync($"https://rika-productprovider.azurewebsites.net/api/GetOne?code=BOUyU5IRFGAxp685S1CPtcLjvKQJNyCD1pbGr-hOE90vAzFuC0EyFg%3D%3D&ProductId={Id}");
+
+        Product = await response.Content.ReadFromJsonAsync<ProductModel>();
+    }
 }
