@@ -1,6 +1,7 @@
 ﻿@page "/products/{Id}"
 @using Rika_Backoffice.Models
 @inject HttpClient Http
+@inject IConfiguration _config
 
 
 <h3>@Product.ProductName</h3>
@@ -61,8 +62,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var response = await Http.GetAsync($"https://rika-productprovider.azurewebsites.net/api/GetOne?code=BOUyU5IRFGAxp685S1CPtcLjvKQJNyCD1pbGr-hOE90vAzFuC0EyFg%3D%3D&ProductId={Id}");
-
+        string apiUrl = _config["API_ProductProvider_GetOne"]!;
+        var response = await Http.GetAsync($"{apiUrl}&ProductId={Id}");
         Product = await response.Content.ReadFromJsonAsync<ProductModel>();
     }
 }

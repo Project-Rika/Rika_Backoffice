@@ -4,6 +4,7 @@
 @using System.Text.Json.Serialization
 @inject HttpClient Http
 @inject NavigationManager Navigation
+@inject IConfiguration _config
 
 @attribute [StreamRendering(true)]
 @rendermode @(new InteractiveServerRenderMode(false))
@@ -75,7 +76,9 @@
     {
         try
         {
-            var response = await Http.GetAsync("https://rika-productprovider.azurewebsites.net/api/GetAll?code=QOwFveKm0uiIHv8EM9zOFBOyy4kxbj8PbHiPupYMO3a1AzFup0BBMw%3D%3D");
+            string apiUrl = _config["API_ProductProvider_GetAll"]!;
+
+            var response = await Http.GetAsync(apiUrl);
             if (response.IsSuccessStatusCode)
             {
                 var productList = await response.Content.ReadFromJsonAsync<List<ProductModel>>();
