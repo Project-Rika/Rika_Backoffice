@@ -145,8 +145,9 @@
 
         try
         {
-            var getOneUrl = Configuration.GetValue<string>("ORDERPROVIVDER_GETONEORDER");
-            var response = await Http.GetAsync($"{getOneUrl}/{OrderId}");
+            var getOneUrl = Configuration.GetValue<string>("ORDERPROVIDER_GETONEORDER_URI");
+            var code = Configuration.GetValue<string>("ORDERPROVIDER_GETONEORDER_CODE");
+            var response = await Http.GetAsync($"{getOneUrl}/{OrderId}?code={code}");
             if (response.IsSuccessStatusCode)
             {
                 var result = await response.Content.ReadFromJsonAsync<OrderModel>();
