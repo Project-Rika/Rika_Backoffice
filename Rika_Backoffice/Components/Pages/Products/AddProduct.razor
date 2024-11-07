@@ -3,77 +3,132 @@
 @using System.ComponentModel.DataAnnotations
 @using System.Text.Json
 @using System.Text
+@using System.Net.Http.Json
 
 
+@attribute [StreamRendering(true)]
+@rendermode @(new InteractiveServerRenderMode(false))
 
-<div class="vw-100 d-inline-flex justify-content-center flex-column">
-    <h3>Create a Product</h3>
-    <EditForm method="post" Model="Input" OnValidSubmit="CreateProduct" FormName="AddProduct" class="w-100">
-        <div class="w-50 d-inline-flex justify-content-center flex-column ">
-            <div class="form-group">
-                <label class="form-label">
-                    Product Name:
-                    <InputText @bind-Value="Input.ProductName" class="form-control" />
-                </label>
-            </div>
 
-            <div class="form-group">
-                <label class="form-label">
-                    Product Price:
-                    <InputNumber @bind-Value="Input.ProductPrice" class="form-control" />
-                </label>
-            </div>
+@switch (status)
+{
+    case LoadStatus.Loading:
+        <p><em>Loading...</em></p>
+        break;
 
-            <div class="form-group">
-                <label class="form-label">
-                    Product Sale Price:
-                    <InputNumber @bind-Value="Input.ProductSalePrice" class="form-control" />
-                </label>
-            </div>
+    case LoadStatus.Failed:
+        <p><em>Could not fetch data. Please try again later.</em></p>
+        break;
 
-            <div class="form-group">
-                <label class="form-label">
-                    Product Description:
-                    <InputText @bind-Value="Input.ProductDescription" class="form-control" />
-                </label>
-            </div>
+    case LoadStatus.NoData:
+        <p><em>No data found.</em></p>
+        break;
 
-            <div class="form-group">
-                <label class="form-label">
-                    Category:
-                    <InputNumber @bind-Value="Input.ProductCategoryId" class="form-control" />
-                </label>
-            </div>
+    case LoadStatus.Success:
+        <div class="w-100 d-flex align-items-center flex-column">
+            <h3 class="">Create a Product</h3>
+            <EditForm method="post" Model="Input" OnValidSubmit="CreateProduct" FormName="AddProduct" class="w-50">
+                <div class="w-100 d-inline-flex justify-content-center flex-column ">
+                    <div class="form-group w-100">
+                        <label class="form-label w-100">
+                            Product Name:
+                            <InputText @bind-Value="Input.ProductName" class="form-control" />
+                        </label>
+                    </div>
 
-            <div class="form-group">
-                <label class="form-label">
-                    Color:
-                    <InputSelect id="department" @bind-Value="Input.ProductColorId">
-                        <option hidden value="">Pick a color</option>
-                        @foreach (var color in Colors)
-                        {
-                            <option value="@color.id">@color.colorName</option>
-                        }
-                    </InputSelect>
-                </label>
-            </div>
+                    <div class="form-group w-100">
+                        <label class="form-label w-100">
+                            Product Price:
+                            <InputNumber @bind-Value="Input.ProductPrice" class="form-control" />
+                        </label>
+                    </div>
 
-            <div class="form-group">
-                <label class="form-label">
-                    Size:
-                    <InputNumber @bind-Value="Input.ProductSizeId" class="form-control" />
-                </label>
-            </div>
+                    <div class="form-group w-100">
+                        <label class="form-label w-100">
+                            Product Sale Price:
+                            <InputNumber @bind-Value="Input.ProductSalePrice" class="form-control" />
+                        </label>
+                    </div>
 
-            <button type="submit" class="btn p-3 btn-danger w-auto">SUBMIT</button>
+                    <div class="form-group w-100">
+                        <label class="form-label w-100">
+                            Product Description:
+                            <InputText @bind-Value="Input.ProductDescription" class="form-control" />
+                        </label>
+                    </div>
+
+                    <div class="form-group w-100">
+                        <label class="form-label w-100">
+                            Category:
+                            <InputSelect id="department" @bind-Value="Input.ProductCategoryId" class="w-100">
+                                @foreach (var category in Categories)
+                                {
+                                    <option value="@category.CategoryId">@category.CategoryName</option>
+                                }
+                            </InputSelect>
+                        </label>
+                    </div>
+
+                    <div class="form-group w-100">
+                        <label class="form-label w-100">
+                            Color:
+                            <InputSelect id="department" @bind-Value="Input.ProductColorId" class="w-100">
+                                <option hidden value="28">None</option>
+                                @foreach (var color in Colors)
+                                {
+                                    <option value="@color.Id">@color.ColorName</option>
+                                }
+                            </InputSelect>
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label w-100">
+                            Size:
+                            <InputSelect id="department" @bind-Value="Input.ProductSizeId" class="w-100">
+                                <option hidden value="22">One-Size</option>
+                                @foreach (var size in Sizes)
+                                {
+                                    <option value="@size.Id">@size.ProductSizeName</option>
+                                }
+                            </InputSelect>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn p-3 btn-success w-100">SUBMIT</button>
+
+                </div>
+            </EditForm>
+
+
+            @if (added == true)
+            {
+                <h1 class="mt-10">Product added</h1>
+            }
         </div>
-    </EditForm>
-</div>
+        break;
+}
 
 @code {
+
     [SupplyParameterFromForm]
     private InputModel Input { get; set; } = new();
     private List<ProductColorEntity>? Colors { get; set; } = new List<ProductColorEntity>();
+    private List<ProductSizeEntity>? Sizes { get; set; } = new List<ProductSizeEntity>();
+    private List<CategoryEntity>? Categories { get; set; } = new List<CategoryEntity>();
+    private bool added = false;
+
+    private LoadStatus status = LoadStatus.Loading;
+
+    public enum LoadStatus
+    {
+        Loading,
+        Success,
+        Failed,
+        NoData
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     protected override async Task OnInitializedAsync()
     {
@@ -82,17 +137,30 @@
         {
             using (var client = new HttpClient())
             {
-                var response = await client.GetAsync("https://rika-productprovider.azurewebsites.net/api/GetAllColors?code=BnPaTGQeB_UdqSPPD81t_LHChr7Zol0HNeqoFMcx2c_UAzFuh7UtOA%3D%3D");
+                var colorResponse = await client.GetAsync("https://rika-productprovider.azurewebsites.net/api/GetAllColors?code=BnPaTGQeB_UdqSPPD81t_LHChr7Zol0HNeqoFMcx2c_UAzFuh7UtOA%3D%3D");
+                var sizeResponse = await client.GetAsync("https://rika-productprovider.azurewebsites.net/api/GetAllSizes?code=AJxItpBsucPBXu6s8A9EX1jY31Jon2H7RyWW9GfCKOEaAzFuPgNoag%3D%3D");
+                var categoryResponse = await client.GetAsync("https://rika-categoryprovider.azurewebsites.net/api/categories?code=GwUqvzaNc2Xjdx1g5DDN9IxOO8siMioDyoSOjWyVY55pAzFu4jmtkw%3D%3D");
 
-                if (response.IsSuccessStatusCode)
+
+                if (colorResponse.IsSuccessStatusCode && sizeResponse.IsSuccessStatusCode)
                 {
-                    var jsonString = await response.Content.ReadAsStringAsync();
-                    Colors = JsonSerializer.Deserialize<List<ProductColorEntity>>(jsonString);
+
+                    Colors = await colorResponse.Content.ReadFromJsonAsync<List<ProductColorEntity>>();
+                    Sizes = await sizeResponse.Content.ReadFromJsonAsync<List<ProductSizeEntity>>();
+                    Categories = await categoryResponse.Content.ReadFromJsonAsync<List<CategoryEntity>>();
+
+                    status = (Colors?.Count == 0 || Sizes?.Count == 0 || Categories?.Count == 0) ? LoadStatus.NoData : LoadStatus.Success;
+
+                    Sizes = Sizes.OrderBy(x => x.Id).ToList();
 
                 }
                 else
                 {
-                    Console.WriteLine($"Error: {response.StatusCode}");
+                    status = LoadStatus.Failed;
+
+                    Console.WriteLine($"Error: {colorResponse.StatusCode}");
+                    Console.WriteLine($"Error: {sizeResponse.StatusCode}");
+
                 }
             }
         }
@@ -102,6 +170,7 @@
         }
     }
 
+    // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
     public async Task CreateProduct(EditContext editContext)
@@ -133,7 +202,10 @@
 
                 if (response.IsSuccessStatusCode)
                 {
+
                     Console.WriteLine("Product added successfully");
+                    added = true;
+                    Input = new InputModel();
                 }
                 else
                 {

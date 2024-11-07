@@ -1,4 +1,6 @@
-﻿namespace Rika_Backoffice.Models;
+﻿using System.Text.Json.Serialization;
+
+namespace Rika_Backoffice.Models;
 
 public class CreateProductModel
 {
@@ -34,12 +36,21 @@ public class  ProductModel
 
 public class ProductColorEntity
 {
-    public int id { get; set; }
-    public string colorName { get; set; } = null!;
+    public int Id { get; set; }
+
+    public string ColorName { get; set; } = null!;
 }
 
 public class ProductSizeEntity
 {
     public int Id { get; set; }
+
     public string ProductSizeName { get; set; } = null!;
+}
+
+public class CategoryEntity
+{
+    public int CategoryId { get; set; }
+    
+    public string CategoryName { get; set; } = null!;
 }
