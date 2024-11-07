@@ -4,6 +4,7 @@
 @using System.Text.Json.Serialization
 @inject HttpClient Http
 @inject NavigationManager Navigation
+@inject IConfiguration Configuration
 
 @attribute [StreamRendering(true)]
 @rendermode @(new InteractiveServerRenderMode(false))
@@ -84,7 +85,7 @@
     {
         try
         {
-            var response = await Http.GetAsync("http://localhost:7245/api/GetAllOrders");
+            var response = await Http.GetAsync(Configuration.GetValue<string>("ORDERPROVIVDER_GETALLORDERS"));
             if (response.IsSuccessStatusCode)
             {
                 var orderList = await response.Content.ReadFromJsonAsync<List<OrderModel>>();

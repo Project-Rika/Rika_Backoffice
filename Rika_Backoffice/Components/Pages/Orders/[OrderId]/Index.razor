@@ -3,6 +3,8 @@
 
 @inject HttpClient Http
 @inject NavigationManager Navigation
+@inject IConfiguration Configuration
+@inject IJSRuntime JSRuntime
 @attribute [StreamRendering(true)]
 @rendermode @(new InteractiveServerRenderMode(false))
 
@@ -139,11 +141,12 @@
 
     protected override async Task OnInitializedAsync()
     {
-       
+
 
         try
         {
-            var response = await Http.GetAsync($"http://localhost:7245/api/GetOneOrder/{OrderId}");
+            var getOneUrl = Configuration.GetValue<string>("ORDERPROVIVDER_GETONEORDER");
+            var response = await Http.GetAsync($"{getOneUrl}/{OrderId}");
             if (response.IsSuccessStatusCode)
             {
                 var result = await response.Content.ReadFromJsonAsync<OrderModel>();
@@ -170,17 +173,30 @@
             order.OrderStatus = newStatus;
             try
             {
-                var response = await Http.PostAsJsonAsync($"http://localhost:7245/api/UpdateOrder", order);
-                if (!response.IsSuccessStatusCode)
+                var updateOneUrl = Configuration.GetValue<string>("ORDERPROVIVDER_UPDATEORDER");
+                var response = await Http.PostAsJsonAsync($"{updateOneUrl}", order);
+                if (response.IsSuccessStatusCode)
                 {
-                    Console.WriteLine("Failed to update order status.");
+                    await ShowSuccessAlert();
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
             }
+            await ShowErrorAlert();
         }
+    }
+
+    private async Task ShowSuccessAlert()
+    {
+        await JSRuntime.InvokeVoidAsync("alert", "Order status updated successfully.");
+
+    }
+
+    private async Task ShowErrorAlert()
+    {
+        await JSRuntime.InvokeVoidAsync("alert", "An error occurred while updating the order status.");
     }
 
 }
