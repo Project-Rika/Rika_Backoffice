@@ -184,8 +184,9 @@
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
+                await ShowErrorAlert();
             }
-            await ShowErrorAlert();
+           
         }
     }
 
