@@ -4,6 +4,7 @@
 @using System.Text.Json.Serialization
 @inject HttpClient Http
 @inject NavigationManager Navigation
+@inject IConfiguration _config
 
 @attribute [StreamRendering(true)]
 @rendermode @(new InteractiveServerRenderMode(false))
@@ -76,10 +77,10 @@
     {
         try
         {
+
             var response = await Http.GetAsync("https://rika-productprovider.azurewebsites.net/api/GetAll?code=QOwFveKm0uiIHv8EM9zOFBOyy4kxbj8PbHiPupYMO3a1AzFup0BBMw%3D%3D");
             var categoryResponse = await Http.GetAsync("https://rika-categoryprovider.azurewebsites.net/api/categories?code=GwUqvzaNc2Xjdx1g5DDN9IxOO8siMioDyoSOjWyVY55pAzFu4jmtkw%3D%3D");
-
-
+      
             if (response.IsSuccessStatusCode)
             {
                 var productList = await response.Content.ReadFromJsonAsync<List<ProductModel>>();
