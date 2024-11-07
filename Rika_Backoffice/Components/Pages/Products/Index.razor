@@ -37,7 +37,7 @@
                 </PropertyColumn>
                 <PropertyColumn Property="@(o => o.ProductPrice)" Title="Price" Sortable="true" Class="customer-name" />
                 <PropertyColumn Property="@(o => o.ProductSalePrice)" Title="Sale Price" Sortable="true" Class="customer-name" />
-                <PropertyColumn Property="@(o => o.ProductCategoryId)" Title="Category" Sortable="true" Class="customer-name" />
+                <PropertyColumn Property="@(o => o.ProductCategory.CategoryName)" Title="Category" Sortable="true" Class="customer-name" />
                 <PropertyColumn Property="@(o => o.ProductSize.ProductSizeName)" Title="Size" Sortable="true" Class="customer-name" /> 
                 <PropertyColumn Property="@(o => o.ProductColor.ColorName)" Title="Color" Sortable="true" Class="customer-name" />
                 <TemplateColumn Title="Action">
@@ -54,6 +54,7 @@
     private IQueryable<ProductModel>? products;
     private IQueryable<ProductModel>? FilteredProducts => products?.Where(o => o.ProductName!.Contains(productName, StringComparison.CurrentCultureIgnoreCase));
     private LoadStatus status = LoadStatus.Loading;
+    private List<CategoryEntity>? Categories { get; set; } = new List<CategoryEntity>();
 
     private string productName = string.Empty;
 
@@ -76,13 +77,23 @@
     {
         try
         {
-            string apiUrl = _config["API_ProductProvider_GetAll"]!;
 
-            var response = await Http.GetAsync(apiUrl);
+            var response = await Http.GetAsync("https://rika-productprovider.azurewebsites.net/api/GetAll?code=QOwFveKm0uiIHv8EM9zOFBOyy4kxbj8PbHiPupYMO3a1AzFup0BBMw%3D%3D");
+            var categoryResponse = await Http.GetAsync("https://rika-categoryprovider.azurewebsites.net/api/categories?code=GwUqvzaNc2Xjdx1g5DDN9IxOO8siMioDyoSOjWyVY55pAzFu4jmtkw%3D%3D");
+      
             if (response.IsSuccessStatusCode)
             {
                 var productList = await response.Content.ReadFromJsonAsync<List<ProductModel>>();
+                var categoryList = await categoryResponse.Content.ReadFromJsonAsync<List<CategoryEntity>>();
+
+                foreach (var product in productList)
+                {
+                    product.ProductCategory = categoryList?.FirstOrDefault(c => c.CategoryId == product.ProductCategoryId);
+                }
+                
+                Categories = categoryList;
                 products = productList?.OrderByDescending(p => p.ProductName).AsQueryable();
+                
 
                 status = (products == null || !products.Any()) ? LoadStatus.NoData : LoadStatus.Success;
             }
