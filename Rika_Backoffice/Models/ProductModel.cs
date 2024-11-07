@@ -2,6 +2,7 @@
 
 namespace Rika_Backoffice.Models;
 
+
 public class CreateProductModel
 {
     public string ProductName { get; set; } = null!;
@@ -17,7 +18,8 @@ public class CreateProductModel
     public ProductColorEntity? ProductColor { get; set; }
 }
 
-public class  ProductModel
+
+public class ProductModel
 {
     public string Id { get; set; } = null!;
     public string ProductName { get; set; } = null!;
@@ -29,15 +31,15 @@ public class  ProductModel
     public int ProductSizeId { get; set; }
     public ProductSizeEntity ProductSize { get; set; } = null!;
 
-    public int? ProductColorId { get; set; }
-    public ProductColorEntity? ProductColor { get; set; }
+
+    public int ProductColorId { get; set; }
+    public ProductColorEntity ProductColor { get; set; } = null!;
 }
 
 
 public class ProductColorEntity
 {
     public int Id { get; set; }
-
     public string ColorName { get; set; } = null!;
 }
 
@@ -53,4 +55,5 @@ public class CategoryEntity
     public int CategoryId { get; set; }
     
     public string CategoryName { get; set; } = null!;
+
 }

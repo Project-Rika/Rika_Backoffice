@@ -10,7 +10,7 @@ public class OrderModel
     public string? PaymentMethod { get; set; }
     public string? ShipmentMethod { get; set; }
     public string? OrderStatus { get; set; }
-    public OrderCustomer? OrderCustomer { get; set; }
+    public OrderCustomer OrderCustomer { get; set; } = null!;
     public OrderAddress? OrderAddress { get; set; }
     public List<OrderProduct>? OrderProducts { get; set; }
     public int ProductCount => OrderProducts?.Count ?? 0;
@@ -18,7 +18,7 @@ public class OrderModel
 
 public class OrderCustomer
 {
-    public string? CustomerName { get; set; }
+    public string CustomerName { get; set; } = null!;
     public string? CustomerEmail { get; set; }
     public string? CustomerPhone { get; set; }
 }
